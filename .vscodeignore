@@ -1,0 +1,7 @@
+.vscode/**
+.vscode-test/**
+**/*.map
+**/*.ts
+**/node_modules/.bin/**
+**/node_modules/playwright/.local-browsers/**
+*.vsix

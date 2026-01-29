@@ -1,0 +1,64 @@
+{
+  "name": "claude-usage-sidebar",
+  "displayName": "Claude Usage Sidebar",
+  "description": "Shows cropped 'Current session' and 'Extra usage' sections from Claude usage page in a sidebar and refreshes on an interval.",
+  "version": "1.0.0",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.108.0"
+  },
+  "extensionKind": [
+    "ui"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "claudeUsageContainer",
+          "title": "Claude",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "claudeUsageContainer": [
+        {
+          "id": "claudeUsage.view",
+          "name": "Usage",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "claudeUsage.refreshNow",
+        "title": "Claude Usage: Refresh Now"
+      },
+      {
+        "command": "claudeUsage.openUsagePage",
+        "title": "Claude Usage: Open Usage Page"
+      }
+    ],
+    "configuration": {
+      "title": "Claude Usage Sidebar",
+      "properties": {
+        "claudeUsage.refreshSeconds": {
+          "type": "number",
+          "default": 30,
+          "minimum": 10,
+          "description": "Refresh interval in seconds."
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.108.1",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^2.32.0"
+  }
+}

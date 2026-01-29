@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Claude Usage Tracker",
+  "version": "1.0",
+  "description": "Tracks Claude usage limits and saves to local file for VSCode extension",
+  "permissions": [
+    "storage",
+    "nativeMessaging",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://claude.ai/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://claude.ai/settings/usage*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Claude Usage Tracker"
+  }
+}
