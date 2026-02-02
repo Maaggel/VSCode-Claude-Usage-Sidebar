@@ -257,6 +257,26 @@ class ClaudeUsageViewProvider {
       // Extra usage
       if (limits.extraUsage) {
         const extraColor = this._getProgressBarColor(limits.extraUsage.percent || 0);
+
+        // Calculate balance marker position (spent + remaining balance)
+        let balanceMarkerHtml = '';
+        const parseAmount = (str) => {
+          if (!str) return null;
+          const match = str.replace(/[^0-9.,]/g, '').replace(',', '.');
+          return parseFloat(match) || null;
+        };
+
+        const spent = parseAmount(limits.extraUsage.spent);
+        const balance = parseAmount(limits.extraUsage.balance);
+        const limit = parseAmount(limits.extraUsage.limit);
+
+        if (spent !== null && balance !== null && limit !== null && limit > 0) {
+          const balanceEndPosition = ((spent + balance) / limit) * 100;
+          if (balanceEndPosition <= 100) {
+            balanceMarkerHtml = `<div class="balance-marker" style="left: ${balanceEndPosition}%" title="Balance ends here"></div>`;
+          }
+        }
+
         limitsHtml += `
       <div class="limit-section">
         <div class="limit-row">
@@ -265,6 +285,7 @@ class ClaudeUsageViewProvider {
         </div>
         <div class="progress-bar">
           <div class="progress-fill" style="width: ${limits.extraUsage.percent || 0}%; background: ${extraColor}"></div>
+          ${balanceMarkerHtml}
         </div>
         <div class="limit-reset">Balance: ${limits.extraUsage.balance || '?'} · Resets ${limits.extraUsage.resetsAt || 'unknown'}</div>
       </div>`;
@@ -307,6 +328,7 @@ class ClaudeUsageViewProvider {
         font-family: var(--vscode-font-family);
         color: var(--vscode-foreground);
         font-size: 12px;
+        min-width: 180px;
       }
       .card {
         background: var(--vscode-editor-background);
@@ -364,11 +386,31 @@ class ClaudeUsageViewProvider {
         border-radius: 4px;
         margin: 6px 0 4px 0;
         overflow: hidden;
+        position: relative;
       }
       .progress-fill {
         height: 100%;
         border-radius: 4px;
         transition: width 0.3s ease;
+      }
+      .balance-marker {
+        position: absolute;
+        top: -2px;
+        bottom: -2px;
+        width: 2px;
+        background: var(--vscode-charts-green, #89d185);
+        border-radius: 1px;
+        z-index: 1;
+      }
+      .balance-marker::after {
+        content: '';
+        position: absolute;
+        top: -3px;
+        left: -2px;
+        width: 6px;
+        height: 6px;
+        background: var(--vscode-charts-green, #89d185);
+        border-radius: 50%;
       }
       .last-updated {
         font-size: 10px;
