@@ -25,17 +25,10 @@ This extension has two components: a Chrome extension that collects data from Cl
 
 ### Step 1: Install the VS Code Extension
 
-**Option A: From VSIX file (Recommended)**
-1. Download the `.vsix` file from the [Releases](../../releases) page
+1. Get the `.vsix` file (either download it or build with `npx vsce package --allow-missing-repository`)
 2. In VS Code, press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
 3. Type **"Install from VSIX"** and select it
-4. Choose the downloaded `.vsix` file
-
-**Option B: From source**
-1. Download or clone this repository
-2. Run `npm install` in the project folder
-3. Run `npx vsce package` to build the `.vsix` file
-4. Install the generated `.vsix` file as described above
+4. Choose the `.vsix` file
 
 ### Step 2: Install the Chrome Extension
 
@@ -166,9 +159,27 @@ Re-run `chrome-extension\native-host\setup-windows.bat` - this fixes the host pa
 
 If you use Claude in multiple browsers, each saves data separately. Set `claudeUsage.dataBrowser` to choose which browser's data to show, or leave it as `auto` to show the most recent.
 
+## Machine-Specific Configuration
+
+If you use VS Code on multiple machines (e.g., Windows + WSL) and want different settings for each, create a local config file:
+
+**File:** `~/.claude/sidebar-config.json`
+
+```json
+{
+  "dataBrowser": "chromium"
+}
+```
+
+This file takes precedence over VS Code settings and is separate for each machine since Windows and WSL have different home directories:
+- **Windows:** `C:\Users\<username>\.claude\sidebar-config.json`
+- **WSL/Linux:** `~/.claude/sidebar-config.json`
+
+This lets you have one instance show Chrome data and another show Chromium data.
+
 ## For Developers
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for build instructions, architecture details, and contribution guidelines.
+See DEVELOPMENT.md for build instructions, architecture details, and contribution guidelines.
 
 ## License
 

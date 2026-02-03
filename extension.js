@@ -68,6 +68,21 @@ class ClaudeUsageViewProvider {
     };
   }
 
+  _getLocalConfig() {
+    // Local config file takes precedence over VS Code settings
+    // This allows different settings per machine (e.g., Windows vs WSL)
+    const configPath = path.join(os.homedir(), ".claude", "sidebar-config.json");
+    try {
+      if (fs.existsSync(configPath)) {
+        const content = fs.readFileSync(configPath, "utf-8");
+        return JSON.parse(content);
+      }
+    } catch (err) {
+      console.error("[Claude Usage] Error reading local config:", err);
+    }
+    return {};
+  }
+
   _getUsageLimitsPath(browser) {
     if (browser && browser !== 'auto') {
       return path.join(os.homedir(), ".claude", `usage-limits-${browser}.json`);
@@ -105,8 +120,10 @@ class ClaudeUsageViewProvider {
 
   _loadUsageLimits() {
     try {
+      const localConfig = this._getLocalConfig();
       const cfg = vscode.workspace.getConfiguration("claudeUsage");
-      const dataBrowser = cfg.get("dataBrowser", "auto");
+      // Local config takes precedence over VS Code settings
+      const dataBrowser = localConfig.dataBrowser || cfg.get("dataBrowser", "auto");
 
       let limitsPath;
       if (dataBrowser === 'auto') {

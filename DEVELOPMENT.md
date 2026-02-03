@@ -109,10 +109,12 @@ claude-usage-sidebar/
 npm install
 
 # Package the extension
-npx vsce package
+npx vsce package --allow-missing-repository
 ```
 
 This creates `claude-usage-sidebar-x.x.x.vsix` in the project root.
+
+> **Note:** The `--allow-missing-repository` flag is needed because this is a private extension without a published repository URL.
 
 ### Building for Distribution
 
@@ -156,6 +158,31 @@ Node.js script that:
 - Receives messages from Chrome via stdin
 - Writes JSON to `~/.claude/usage-limits-{browser}.json`
 - Handles the native messaging protocol (length-prefixed messages)
+
+## Configuration
+
+### VS Code Settings
+
+Standard settings are read from VS Code's configuration system (`claudeUsage.*`).
+
+### Machine-Specific Config File
+
+For environments where VS Code settings are shared (e.g., Windows + WSL via Remote extension), the extension supports a local config file that takes precedence:
+
+**File:** `~/.claude/sidebar-config.json`
+
+```json
+{
+  "dataBrowser": "chromium"
+}
+```
+
+This is useful because:
+- Windows and WSL have different home directories
+- VS Code User settings are often synced between local and remote
+- Each machine can have independent browser preferences
+
+The extension checks for this file in `_getLocalConfig()` and uses its values over VS Code settings.
 
 ## Data Format
 
