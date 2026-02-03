@@ -68,17 +68,33 @@ class ClaudeUsageViewProvider {
     };
   }
 
-  _getUsageLimitsPath() {
+  _getUsageLimitsPath(browser) {
+    if (browser && browser !== 'auto') {
+      return path.join(os.homedir(), ".claude", `usage-limits-${browser}.json`);
+    }
+    // Legacy path for backwards compatibility
     return path.join(os.homedir(), ".claude", "usage-limits.json");
+  }
+
+  _getAllUsageLimitsPaths() {
+    const claudeDir = path.join(os.homedir(), ".claude");
+    const browsers = ['chrome', 'chromium', 'edge', 'brave', 'vivaldi', 'opera'];
+    const paths = browsers.map(b => ({
+      browser: b,
+      path: path.join(claudeDir, `usage-limits-${b}.json`)
+    }));
+    // Also include legacy path
+    paths.push({ browser: 'legacy', path: path.join(claudeDir, 'usage-limits.json') });
+    return paths;
   }
 
   _setupFileWatchers() {
     const claudeDir = path.join(os.homedir(), ".claude");
 
     try {
-      // Watch for usage-limits.json changes from Chrome extension
+      // Watch for usage-limits*.json changes from Chrome extension (any browser)
       this.fileWatcher = fs.watch(claudeDir, (_, filename) => {
-        if (filename === "usage-limits.json") {
+        if (filename && filename.startsWith("usage-limits") && filename.endsWith(".json")) {
           this.refresh();
         }
       });
@@ -89,8 +105,35 @@ class ClaudeUsageViewProvider {
 
   _loadUsageLimits() {
     try {
-      const limitsPath = this._getUsageLimitsPath();
-      if (fs.existsSync(limitsPath)) {
+      const cfg = vscode.workspace.getConfiguration("claudeUsage");
+      const dataBrowser = cfg.get("dataBrowser", "auto");
+
+      let limitsPath;
+      if (dataBrowser === 'auto') {
+        // Find the most recently updated file
+        const allPaths = this._getAllUsageLimitsPaths();
+        let mostRecent = null;
+        let mostRecentTime = 0;
+
+        for (const { path: filePath } of allPaths) {
+          if (fs.existsSync(filePath)) {
+            try {
+              const stats = fs.statSync(filePath);
+              if (stats.mtimeMs > mostRecentTime) {
+                mostRecentTime = stats.mtimeMs;
+                mostRecent = filePath;
+              }
+            } catch (e) {
+              // Ignore stat errors
+            }
+          }
+        }
+        limitsPath = mostRecent;
+      } else {
+        limitsPath = this._getUsageLimitsPath(dataBrowser);
+      }
+
+      if (limitsPath && fs.existsSync(limitsPath)) {
         const content = fs.readFileSync(limitsPath, "utf-8");
         const newLimits = JSON.parse(content);
         // Only update if we got valid data (keep previous data if file is empty/invalid)
@@ -513,50 +556,118 @@ function activate(context) {
     })
   );
 
-  // Helper function to open Chrome usage page in app mode
+  // Helper function to open browser usage page in app mode
   const openUsagePage = () => {
     const url = 'https://claude.ai/settings/usage';
     const { exec } = require('child_process');
     const platform = process.platform;
+    const cfg = vscode.workspace.getConfiguration("claudeUsage");
+    const customBrowserPath = cfg.get("browserPath", "");
 
-    if (platform === 'win32') {
-      // Find Chrome installation
-      const chromePaths = [
-        path.join(process.env.PROGRAMFILES || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-        path.join(process.env['PROGRAMFILES(X86)'] || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-        path.join(process.env.LOCALAPPDATA || '', 'Google', 'Chrome', 'Application', 'chrome.exe')
-      ];
+    // Helper to check if path is a valid executable (not a script file)
+    const isValidExecutable = (browserPath) => {
+      const lowerPath = browserPath.toLowerCase();
+      if (platform === 'win32') {
+        return lowerPath.endsWith('.exe');
+      }
+      // On macOS/Linux, just make sure it's not a script file
+      return !lowerPath.endsWith('.js') && !lowerPath.endsWith('.sh') && !lowerPath.endsWith('.py');
+    };
 
-      let chromePath = null;
-      for (const p of chromePaths) {
-        if (fs.existsSync(p)) {
-          chromePath = p;
-          break;
+    // Helper to check if a path looks like a Chrome-based browser
+    const isChromeBased = (browserPath) => {
+      const lowerPath = browserPath.toLowerCase();
+      return lowerPath.includes('chrome') ||
+             lowerPath.includes('chromium') ||
+             lowerPath.includes('brave') ||
+             lowerPath.includes('edge') ||
+             lowerPath.includes('vivaldi') ||
+             lowerPath.includes('opera');
+    };
+
+    // Helper to launch browser - uses exec with shell for better Windows compatibility
+    const launchBrowser = (browserPath, useAppMode) => {
+      const args = useAppMode ? `--app="${url}" --new-window` : `"${url}"`;
+      const command = `"${browserPath}" ${args}`;
+
+      try {
+        exec(command, { windowsHide: true }, (err) => {
+          if (err) {
+            console.error('[Claude Usage] Browser launch failed, falling back to default:', err.message);
+            vscode.env.openExternal(vscode.Uri.parse(url));
+          }
+        });
+        return true;
+      } catch (err) {
+        console.error('[Claude Usage] Failed to launch browser:', err);
+        return false;
+      }
+    };
+
+    // If a custom browser path is configured, use it
+    if (customBrowserPath) {
+      if (!isValidExecutable(customBrowserPath)) {
+        console.warn('[Claude Usage] Browser path is not a valid executable:', customBrowserPath);
+        vscode.window.showWarningMessage(`Invalid browser path: "${customBrowserPath}". Please set a valid executable (e.g., .exe on Windows).`);
+      } else if (fs.existsSync(customBrowserPath)) {
+        const useAppMode = isChromeBased(customBrowserPath);
+        if (launchBrowser(customBrowserPath, useAppMode)) {
+          return;
         }
+      } else {
+        console.warn('[Claude Usage] Custom browser path does not exist:', customBrowserPath);
+        vscode.window.showWarningMessage(`Browser not found at: "${customBrowserPath}"`);
+      }
+      // Fall through to default browser if custom path fails
+    }
+
+    // Try to find Chrome on Windows for app mode
+    if (platform === 'win32') {
+      const chromePaths = [];
+
+      if (process.env.PROGRAMFILES) {
+        chromePaths.push(path.join(process.env.PROGRAMFILES, 'Google', 'Chrome', 'Application', 'chrome.exe'));
+      }
+      if (process.env['PROGRAMFILES(X86)']) {
+        chromePaths.push(path.join(process.env['PROGRAMFILES(X86)'], 'Google', 'Chrome', 'Application', 'chrome.exe'));
+      }
+      if (process.env.LOCALAPPDATA) {
+        chromePaths.push(path.join(process.env.LOCALAPPDATA, 'Google', 'Chrome', 'Application', 'chrome.exe'));
       }
 
-      if (chromePath) {
-        const { spawn } = require('child_process');
-        spawn(chromePath, ['--app=' + url, '--new-window'], {
-          detached: true,
-          stdio: 'ignore'
-        }).unref();
-      } else {
-        vscode.env.openExternal(vscode.Uri.parse(url));
+      for (const chromePath of chromePaths) {
+        if (fs.existsSync(chromePath)) {
+          if (launchBrowser(chromePath, true)) {
+            return;
+          }
+        }
       }
     } else if (platform === 'darwin') {
-      exec(`open -na "Google Chrome" --args --app="${url}"`, (err) => {
-        if (err) {
-          vscode.env.openExternal(vscode.Uri.parse(url));
+      const macChromePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+      if (fs.existsSync(macChromePath)) {
+        if (launchBrowser(macChromePath, true)) {
+          return;
         }
-      });
+      }
     } else {
-      exec(`google-chrome --app="${url}"`, (err) => {
-        if (err) {
-          vscode.env.openExternal(vscode.Uri.parse(url));
+      // Linux - try common Chrome paths
+      const linuxChromePaths = [
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser'
+      ];
+      for (const chromePath of linuxChromePaths) {
+        if (fs.existsSync(chromePath)) {
+          if (launchBrowser(chromePath, true)) {
+            return;
+          }
         }
-      });
+      }
     }
+
+    // Fall back to system default browser
+    vscode.env.openExternal(vscode.Uri.parse(url));
   };
 
   context.subscriptions.push(

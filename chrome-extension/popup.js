@@ -4,9 +4,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const contentDiv = document.getElementById('content');
   const refreshBtn = document.getElementById('refreshBtn');
   const lastUpdatedSpan = document.getElementById('lastUpdated');
+  const browserSelect = document.getElementById('browserSelect');
 
-  // Load and display stored data
-  chrome.storage.local.get(['usageData', 'lastUpdated'], (result) => {
+  // Load browser preference and stored data
+  chrome.storage.local.get(['usageData', 'lastUpdated', 'browserOverride'], (result) => {
+    // Set browser dropdown to saved value
+    if (result.browserOverride) {
+      browserSelect.value = result.browserOverride;
+    }
     if (result.usageData) {
       displayData(result.usageData);
       if (result.lastUpdated) {
@@ -21,6 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Open usage page button
   refreshBtn.addEventListener('click', () => {
     chrome.tabs.create({ url: 'https://claude.ai/settings/usage' });
+  });
+
+  // Browser selection change
+  browserSelect.addEventListener('change', () => {
+    const value = browserSelect.value;
+    chrome.storage.local.set({ browserOverride: value }, () => {
+      console.log('[Claude Usage] Browser override set to:', value);
+    });
   });
 
   function displayData(data) {

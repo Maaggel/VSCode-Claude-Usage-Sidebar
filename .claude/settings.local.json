@@ -9,7 +9,9 @@
       "Bash(vsce:*)",
       "Bash(npm view:*)",
       "Bash(npm ping:*)",
-      "Bash(npx vsce package --help:*)"
+      "Bash(npx vsce package --help:*)",
+      "Bash(npm install:*)",
+      "Bash(C:UsersMikkelBundgaardAppDataRoamingnvmnvm.exe list)"
     ]
   }
 }

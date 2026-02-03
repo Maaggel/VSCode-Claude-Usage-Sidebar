@@ -6,13 +6,19 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-// Output file path - in the .claude directory so VSCode extension can read it
-const OUTPUT_FILE = path.join(os.homedir(), '.claude', 'usage-limits.json');
+// Base directory for output files
+const CLAUDE_DIR = path.join(os.homedir(), '.claude');
 
 // Ensure .claude directory exists
-const claudeDir = path.dirname(OUTPUT_FILE);
-if (!fs.existsSync(claudeDir)) {
-  fs.mkdirSync(claudeDir, { recursive: true });
+if (!fs.existsSync(CLAUDE_DIR)) {
+  fs.mkdirSync(CLAUDE_DIR, { recursive: true });
+}
+
+// Get output file path based on browser type
+function getOutputFile(browser) {
+  // Default to 'chrome' if no browser specified (backwards compatibility)
+  const browserName = browser || 'chrome';
+  return path.join(CLAUDE_DIR, `usage-limits-${browserName}.json`);
 }
 
 // Read message from stdin (Chrome native messaging protocol)
@@ -65,15 +71,18 @@ async function main() {
   try {
     const message = await readMessage();
 
+    // Get browser-specific output file
+    const outputFile = getOutputFile(message.browser);
+
     // Save the data to file
     const dataToSave = {
       ...message,
       savedAt: new Date().toISOString()
     };
 
-    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(dataToSave, null, 2));
+    fs.writeFileSync(outputFile, JSON.stringify(dataToSave, null, 2));
 
-    sendMessage({ success: true, savedTo: OUTPUT_FILE });
+    sendMessage({ success: true, savedTo: outputFile, browser: message.browser });
   } catch (err) {
     sendMessage({ success: false, error: err.message });
   }

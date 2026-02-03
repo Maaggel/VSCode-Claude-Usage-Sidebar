@@ -67,6 +67,28 @@
       text-align: center;
       padding: 20px 0;
     }
+    .setting {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+    .setting-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+    select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      background: white;
+    }
+    select:focus {
+      outline: none;
+      border-color: #2563eb;
+    }
   </style>
 </head>
 <body>
@@ -75,6 +97,18 @@
     <div class="no-data">Loading...</div>
   </div>
   <button id="refreshBtn">Open Usage Page</button>
+  <div class="setting">
+    <div class="setting-label">Browser (for file naming)</div>
+    <select id="browserSelect">
+      <option value="auto">Auto-detect</option>
+      <option value="chrome">Chrome</option>
+      <option value="chromium">Chromium</option>
+      <option value="edge">Edge</option>
+      <option value="brave">Brave</option>
+      <option value="vivaldi">Vivaldi</option>
+      <option value="opera">Opera</option>
+    </select>
+  </div>
   <div class="footer">
     <span id="lastUpdated">Never updated</span>
   </div>

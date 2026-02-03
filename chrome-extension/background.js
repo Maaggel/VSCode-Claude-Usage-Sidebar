@@ -3,6 +3,33 @@
 const NATIVE_HOST_NAME = 'com.claude.usage_tracker';
 const REFRESH_INTERVAL_MINUTES = 1;
 
+// Detect browser type from user agent
+function detectBrowser() {
+  const ua = navigator.userAgent;
+  if (ua.includes('Edg/')) return 'edge';
+  if (ua.includes('Brave')) return 'brave';
+  if (ua.includes('Vivaldi')) return 'vivaldi';
+  if (ua.includes('OPR/') || ua.includes('Opera')) return 'opera';
+  if (ua.includes('Chromium')) return 'chromium';
+  if (ua.includes('Chrome')) return 'chrome';
+  return 'unknown';
+}
+
+const AUTO_DETECTED_BROWSER = detectBrowser();
+
+// Get the effective browser type (override or auto-detected)
+async function getEffectiveBrowser() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['browserOverride'], (result) => {
+      if (result.browserOverride && result.browserOverride !== 'auto') {
+        resolve(result.browserOverride);
+      } else {
+        resolve(AUTO_DETECTED_BROWSER);
+      }
+    });
+  });
+}
+
 // Handle messages from content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'usageData') {
@@ -16,8 +43,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       console.log('[Claude Usage] Data saved to storage');
     });
 
-    // Try to send via native messaging
-    sendToNativeHost(message.data);
+    // Try to send via native messaging (async)
+    getEffectiveBrowser().then(browser => {
+      sendToNativeHost(message.data, browser);
+    });
 
     sendResponse({ success: true });
   }
@@ -25,9 +54,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 // Send data to native messaging host
-function sendToNativeHost(data) {
+function sendToNativeHost(data, browser) {
   try {
-    chrome.runtime.sendNativeMessage(NATIVE_HOST_NAME, data, (response) => {
+    // Include browser type so native host can save to browser-specific file
+    const messageWithBrowser = { ...data, browser: browser };
+    chrome.runtime.sendNativeMessage(NATIVE_HOST_NAME, messageWithBrowser, (response) => {
       if (chrome.runtime.lastError) {
         console.log('[Claude Usage] Native messaging error:', chrome.runtime.lastError.message);
         // Fall back to storing in extension storage only

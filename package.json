@@ -2,7 +2,7 @@
   "name": "claude-usage-sidebar",
   "displayName": "Claude Usage Sidebar",
   "description": "Shows cropped 'Current session' and 'Extra usage' sections from Claude usage page in a sidebar and refreshes on an interval.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "local",
   "engines": {
     "vscode": "^1.108.0"
@@ -52,6 +52,17 @@
           "default": 30,
           "minimum": 10,
           "description": "Refresh interval in seconds."
+        },
+        "claudeUsage.browserPath": {
+          "type": "string",
+          "default": "",
+          "description": "Custom browser executable path (e.g., path to Chromium). Leave empty to use Chrome or system default."
+        },
+        "claudeUsage.dataBrowser": {
+          "type": "string",
+          "enum": ["auto", "chrome", "chromium", "edge", "brave", "vivaldi", "opera"],
+          "default": "auto",
+          "description": "Which browser's usage data to display. 'auto' shows the most recently updated data."
         }
       }
     }
@@ -59,6 +70,7 @@
   "devDependencies": {
     "@types/vscode": "^1.108.1",
     "@vscode/test-electron": "^2.5.2",
-    "@vscode/vsce": "^2.32.0"
+    "@vscode/vsce": "^2.19.0",
+    "vsce": "^2.15.0"
   }
 }
