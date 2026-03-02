@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="currentColor">
+  <!-- Claude sparkle -->
+  <path d="M64 4 Q73 36 116 44 Q73 52 64 84 Q55 52 12 44 Q55 36 64 4 Z" opacity="0.9"/>
+  <!-- Usage meter bar (background) -->
+  <rect x="16" y="100" width="96" height="16" rx="8" opacity="0.2"/>
+  <!-- Usage meter bar (fill) -->
+  <rect x="16" y="100" width="60" height="16" rx="8" opacity="0.85"/>
+</svg>

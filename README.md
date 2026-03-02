@@ -31,15 +31,16 @@ The extension has two parts:
 
 ### Step 1: Install the Chrome Extension
 
-1. Open your browser and go to `chrome://extensions/`
-2. Enable **Developer mode** (toggle in the top-right corner)
-3. Click **Load unpacked**
-4. Select the `chrome-extension` folder from this project
-5. Copy the **Extension ID** shown under the extension name — you'll need it in Step 3
+1. [Download the Chrome extension from the latest release](https://github.com/Maaggel/VSCode-Claude-Usage-Sidebar/releases)
+2. Open your browser and go to `chrome://extensions/`
+3. Enable **Developer mode** (toggle in the top-right corner)
+4. Click **Load unpacked**
+5. Unpack and select the downloaded `chrome-extension`
+6. Copy the **Extension ID** shown under the extension name — you'll need it in Step 3
 
 ### Step 2: Install the VS Code Extension
 
-1. Download or build the `.vsix` file:
+1. [Download the .vsix file from the latest release](https://github.com/Maaggel/VSCode-Claude-Usage-Sidebar/releases) or build the `.vsix` file yourself:
    ```
    npx vsce package --allow-missing-repository
    ```
