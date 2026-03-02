@@ -4,6 +4,10 @@
   "description": "Shows cropped 'Current session' and 'Extra usage' sections from Claude usage page in a sidebar and refreshes on an interval.",
   "version": "1.0.3",
   "publisher": "local",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Maaggel/VSCode-Claude-Usage-Sidebar"
+  },
   "engines": {
     "vscode": "^1.108.0"
   },

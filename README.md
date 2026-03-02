@@ -5,6 +5,8 @@ A VS Code extension that shows your [Claude.ai](https://claude.ai) usage limits 
 ![VS Code](https://img.shields.io/badge/VS%20Code-1.108%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+![Claude Usage Sidebar in VS Code](media/screenshot_001.png)
+
 ## Features
 
 - **Session usage** — current session percentage and time until reset
@@ -24,7 +26,7 @@ The extension has two parts:
 
 - **VS Code** 1.108.0+
 - **Chrome** or any Chromium-based browser (Edge, Brave, Vivaldi, Opera)
-- **Node.js** installed and available in your PATH
+- **Node.js** 20+ installed and available in your PATH
 - A **Claude.ai Pro or Team subscription** (free accounts don't have usage limits to track)
 
 ## Installation
@@ -38,11 +40,13 @@ The extension has two parts:
 5. Unpack and select the downloaded `chrome-extension`
 6. Copy the **Extension ID** shown under the extension name — you'll need it in Step 3
 
+   ![Finding the Chrome extension ID](media/screenshot_002.png)
+
 ### Step 2: Install the VS Code Extension
 
 1. [Download the .vsix file from the latest release](https://github.com/Maaggel/VSCode-Claude-Usage-Sidebar/releases) or build the `.vsix` file yourself:
    ```
-   npx vsce package --allow-missing-repository
+   npx vsce package
    ```
 2. In VS Code, press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
 3. Search for **"Install from VSIX"** and select it
