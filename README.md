@@ -44,7 +44,7 @@ The extension has two parts:
 
 ### Step 2: Install the VS Code Extension
 
-1. [Download the .vsix file from the latest release](https://github.com/Maaggel/VSCode-Claude-Usage-Sidebar/releases) or build the `.vsix` file yourself:
+1. [Download the .vsix file from the latest release](https://github.com/Maaggel/VSCode-Claude-Usage-Sidebar/releases) or pull this repository and build the `.vsix` file yourself:
    ```
    npx vsce package
    ```
