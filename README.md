@@ -1,121 +1,134 @@
 # Claude Usage Sidebar
 
-A VS Code extension that displays your Claude.ai usage limits directly in the sidebar.
+A VS Code extension that shows your [Claude.ai](https://claude.ai) usage limits directly in the sidebar — session usage, weekly limits, and extra usage at a glance.
 
-![Usage Display](https://img.shields.io/badge/VS%20Code-Extension-blue)
+![VS Code](https://img.shields.io/badge/VS%20Code-1.108%2B-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ## Features
 
-- **Current Session** - See your session usage with percentage and reset time
-- **Weekly Limits** - Track usage across all models with reset date
-- **Extra Usage** - Monitor spent amount, balance, and limit
-- Auto-refreshes every 30 seconds
-- Visual progress bars for quick status checks
+- **Session usage** — current session percentage and time until reset
+- **Weekly limits** — usage across all models with reset date
+- **Extra usage** — spent amount, remaining balance, and limit
+- **Auto-refresh** — updates every 30 seconds (configurable)
+- **Visual progress bars** — quick status at a glance
+
+## How It Works
+
+The extension has two parts:
+
+1. A **Chrome extension** that reads your usage data from Claude.ai and saves it locally via native messaging
+2. A **VS Code extension** that reads that local data and displays it in a sidebar panel
 
 ## Requirements
 
-- **VS Code** 1.108.0 or higher
-- **Chrome/Chromium-based browser** (Chrome, Edge, Brave, Vivaldi, or Opera)
-- **Node.js** installed on your system
-- **Claude.ai Pro/Team subscription** (to have usage limits to track)
+- **VS Code** 1.108.0+
+- **Chrome** or any Chromium-based browser (Edge, Brave, Vivaldi, Opera)
+- **Node.js** installed and available in your PATH
+- A **Claude.ai Pro or Team subscription** (free accounts don't have usage limits to track)
 
 ## Installation
 
-This extension has two components: a Chrome extension that collects data from Claude.ai, and a VS Code extension that displays it.
+### Step 1: Install the Chrome Extension
 
-### Step 1: Install the VS Code Extension
-
-1. Get the `.vsix` file (either download it or build with `npx vsce package --allow-missing-repository`)
-2. In VS Code, press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
-3. Type **"Install from VSIX"** and select it
-4. Choose the `.vsix` file
-
-### Step 2: Install the Chrome Extension
-
-1. Open Chrome and go to `chrome://extensions/`
-2. Enable **Developer mode** (toggle in top-right corner)
+1. Open your browser and go to `chrome://extensions/`
+2. Enable **Developer mode** (toggle in the top-right corner)
 3. Click **Load unpacked**
 4. Select the `chrome-extension` folder from this project
-5. Note the **Extension ID** shown under the extension name (you'll need this)
+5. Copy the **Extension ID** shown under the extension name — you'll need it in Step 3
+
+### Step 2: Install the VS Code Extension
+
+1. Download or build the `.vsix` file:
+   ```
+   npx vsce package --allow-missing-repository
+   ```
+2. In VS Code, press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
+3. Search for **"Install from VSIX"** and select it
+4. Choose the `.vsix` file
 
 ### Step 3: Set Up Native Messaging
 
-The Chrome extension needs native messaging to save data locally so VS Code can read it.
+The Chrome extension uses [native messaging](https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging) to save usage data to a local file that VS Code can read. Pick your platform below.
 
-#### Windows
+<details>
+<summary><strong>Windows</strong></summary>
 
-1. Open a command prompt in the project folder
-2. Run:
+1. Open a terminal in the project folder
+2. Run the setup script:
    ```batch
    chrome-extension\native-host\setup-windows.bat
    ```
 3. Enter your Chrome extension ID when prompted
-4. The script will set up everything automatically
+4. Done — the script handles everything automatically
 
-#### macOS
+</details>
+
+<details>
+<summary><strong>macOS</strong></summary>
 
 ```bash
 # Create the native host directory
 mkdir -p ~/.claude/native-host
 
-# Copy files (run from project directory)
+# Copy files (run from the project directory)
 cp chrome-extension/native-host/host.js ~/.claude/native-host/
 cp chrome-extension/native-host/com.claude.usage_tracker.json ~/.claude/native-host/
 
-# Make executable
+# Make the host script executable
 chmod +x ~/.claude/native-host/host.js
 
-# Update the manifest with your extension ID (replace YOUR_EXTENSION_ID)
+# Replace placeholders with your extension ID and path
 sed -i '' "s/EXTENSION_ID_PLACEHOLDER/YOUR_EXTENSION_ID/g" ~/.claude/native-host/com.claude.usage_tracker.json
 sed -i '' "s|HOST_PATH_PLACEHOLDER|$HOME/.claude/native-host/host.js|g" ~/.claude/native-host/com.claude.usage_tracker.json
 
-# Register for Chrome
+# Register the native host with Chrome
 mkdir -p ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts
-ln -sf ~/.claude/native-host/com.claude.usage_tracker.json ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/
+ln -sf ~/.claude/native-host/com.claude.usage_tracker.json \
+  ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/
 ```
 
-#### Linux
+</details>
+
+<details>
+<summary><strong>Linux</strong></summary>
 
 ```bash
 # Create the native host directory
 mkdir -p ~/.claude/native-host
 
-# Copy files (run from project directory)
+# Copy files (run from the project directory)
 cp chrome-extension/native-host/host.js ~/.claude/native-host/
 cp chrome-extension/native-host/com.claude.usage_tracker.json ~/.claude/native-host/
 
-# Make executable
+# Make the host script executable
 chmod +x ~/.claude/native-host/host.js
 
-# Update the manifest with your extension ID (replace YOUR_EXTENSION_ID)
+# Replace placeholders with your extension ID and path
 sed -i "s/EXTENSION_ID_PLACEHOLDER/YOUR_EXTENSION_ID/g" ~/.claude/native-host/com.claude.usage_tracker.json
 sed -i "s|HOST_PATH_PLACEHOLDER|$HOME/.claude/native-host/host.js|g" ~/.claude/native-host/com.claude.usage_tracker.json
 
-# Register for Chrome
+# Register the native host with Chrome
 mkdir -p ~/.config/google-chrome/NativeMessagingHosts
-ln -sf ~/.claude/native-host/com.claude.usage_tracker.json ~/.config/google-chrome/NativeMessagingHosts/
+ln -sf ~/.claude/native-host/com.claude.usage_tracker.json \
+  ~/.config/google-chrome/NativeMessagingHosts/
 
 # Or for Chromium
 mkdir -p ~/.config/chromium/NativeMessagingHosts
-ln -sf ~/.claude/native-host/com.claude.usage_tracker.json ~/.config/chromium/NativeMessagingHosts/
+ln -sf ~/.claude/native-host/com.claude.usage_tracker.json \
+  ~/.config/chromium/NativeMessagingHosts/
 ```
 
-### Step 4: First Use
+</details>
+
+### Step 4: Verify It Works
 
 1. Click the **Claude** icon in the VS Code Activity Bar (left sidebar)
-2. Click **Open Usage Page** to open Claude's usage page in your browser
+2. Click **Open Usage Page** — this opens Claude's usage page in your browser
 3. Log in to Claude.ai if needed
-4. The extension will automatically sync and display your usage data
+4. The sidebar will automatically sync and display your usage data
 
-## Usage
-
-Once set up, the sidebar shows:
-
-- **Current Session** - Usage in your current session with time until reset
-- **Weekly Limits** - Your weekly usage across all models
-- **Extra Usage** - Any extra usage charges (if applicable)
-
-The data refreshes automatically. If data becomes stale, a refresh button will appear.
+> **Tip:** You can drag the Claude icon from the Activity Bar to the **Secondary Side Bar** (right side) or the **Panel** (bottom) to keep your usage data visible while you work. This way you can have your file explorer or source control open on the left and your Claude usage always visible on the right.
 
 ## Settings
 
@@ -123,45 +136,53 @@ Open VS Code Settings (`Ctrl+,`) and search for "Claude Usage":
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `claudeUsage.refreshSeconds` | How often to refresh (seconds) | 30 |
-| `claudeUsage.browserPath` | Custom browser path for opening usage page | (system default) |
-| `claudeUsage.dataBrowser` | Which browser's data to show (`auto`, `chrome`, `chromium`, `edge`, `brave`, `vivaldi`, `opera`) | auto |
+| `claudeUsage.refreshSeconds` | Auto-refresh interval in seconds | `30` |
+| `claudeUsage.browserPath` | Custom browser path for opening the usage page | System default |
+| `claudeUsage.dataBrowser` | Which browser's data to display: `auto`, `chrome`, `chromium`, `edge`, `brave`, `vivaldi`, `opera` | `auto` |
 
 ## Troubleshooting
 
-### "No usage data found"
+<details>
+<summary><strong>"No usage data found"</strong></summary>
 
 1. Make sure the Chrome extension is installed and enabled
-2. Open the Claude usage page at least once (click "Open Usage Page" in the sidebar)
-3. Verify native messaging is set up correctly (see Step 3)
+2. Open the Claude usage page at least once (click **Open Usage Page** in the sidebar)
+3. Verify native messaging is set up correctly (see Step 3 above)
 
-### Data not updating
+</details>
+
+<details>
+<summary><strong>Data not updating</strong></summary>
 
 1. Check that the Chrome extension is enabled at `chrome://extensions/`
-2. Try opening the usage page again via the sidebar button
-3. Check the Chrome extension popup for any error messages
+2. Open the usage page again via the sidebar button
+3. Check the Chrome extension popup for error messages
 
-### Native messaging errors
+</details>
 
-**Windows:**
-- Re-run `setup-windows.bat` if you see errors
-- Make sure Node.js is installed and in your PATH
+<details>
+<summary><strong>Native messaging errors</strong></summary>
 
-**macOS/Linux:**
-- Verify `~/.claude/native-host/host.js` exists and is executable
-- Check that symlinks were created in the correct browser directory
+**Windows:** Re-run `setup-windows.bat` and make sure Node.js is in your PATH.
 
-### "Select an app to open this .js file" (Windows)
+**macOS/Linux:** Verify `~/.claude/native-host/host.js` exists and is executable, and that the symlink was created in the correct browser directory.
 
-Re-run `chrome-extension\native-host\setup-windows.bat` - this fixes the host path.
+</details>
+
+<details>
+<summary><strong>"Select an app to open this .js file" (Windows)</strong></summary>
+
+Re-run `chrome-extension\native-host\setup-windows.bat` — this fixes the host path.
+
+</details>
 
 ## Multi-Browser Support
 
-If you use Claude in multiple browsers, each saves data separately. Set `claudeUsage.dataBrowser` to choose which browser's data to show, or leave it as `auto` to show the most recent.
+If you use Claude in multiple browsers, each browser saves its data separately. Set `claudeUsage.dataBrowser` to choose which browser's data to display, or leave it as `auto` to show whichever was updated most recently.
 
 ## Machine-Specific Configuration
 
-If you use VS Code on multiple machines (e.g., Windows + WSL) and want different settings for each, create a local config file:
+If you use VS Code on multiple machines (e.g., Windows + WSL), you can create a local config file that overrides VS Code settings per machine:
 
 **File:** `~/.claude/sidebar-config.json`
 
@@ -171,16 +192,14 @@ If you use VS Code on multiple machines (e.g., Windows + WSL) and want different
 }
 ```
 
-This file takes precedence over VS Code settings and is separate for each machine since Windows and WSL have different home directories:
+Since Windows and WSL have separate home directories, this lets each environment point to a different browser's data:
 - **Windows:** `C:\Users\<username>\.claude\sidebar-config.json`
 - **WSL/Linux:** `~/.claude/sidebar-config.json`
 
-This lets you have one instance show Chrome data and another show Chromium data.
+## Contributing
 
-## For Developers
-
-See DEVELOPMENT.md for build instructions, architecture details, and contribution guidelines.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for build instructions and architecture details.
 
 ## License
 
-MIT
+This project is licensed under the [MIT License](LICENSE).

@@ -2,7 +2,7 @@
   "name": "claude-usage-sidebar",
   "displayName": "Claude Usage Sidebar",
   "description": "Shows cropped 'Current session' and 'Extra usage' sections from Claude usage page in a sidebar and refreshes on an interval.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "local",
   "engines": {
     "vscode": "^1.108.0"
