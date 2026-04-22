@@ -59,13 +59,15 @@ The Chrome extension uses [native messaging](https://developer.chrome.com/docs/e
 <details>
 <summary><strong>Windows</strong></summary>
 
-1. Open a terminal in the project folder
+1. Open **PowerShell** in the project folder
 2. Run the setup script:
-   ```batch
-   chrome-extension\native-host\setup-windows.bat
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File chrome-extension\native-host\setup-windows.ps1
    ```
 3. Enter your Chrome extension ID when prompted
 4. Done — the script handles everything automatically
+
+> **Note:** If you prefer Command Prompt, you can run `chrome-extension\native-host\setup-windows.bat` instead — but `.bat` files require `cmd.exe` and won't work in Git Bash or PowerShell directly.
 
 </details>
 
@@ -168,7 +170,7 @@ Open VS Code Settings (`Ctrl+,`) and search for "Claude Usage":
 <details>
 <summary><strong>Native messaging errors</strong></summary>
 
-**Windows:** Re-run `setup-windows.bat` and make sure Node.js is in your PATH.
+**Windows:** Re-run `setup-windows.ps1` via PowerShell (`powershell -ExecutionPolicy Bypass -File chrome-extension\native-host\setup-windows.ps1`) and make sure Node.js is in your PATH.
 
 **macOS/Linux:** Verify `~/.claude/native-host/host.js` exists and is executable, and that the symlink was created in the correct browser directory.
 
@@ -177,7 +179,7 @@ Open VS Code Settings (`Ctrl+,`) and search for "Claude Usage":
 <details>
 <summary><strong>"Select an app to open this .js file" (Windows)</strong></summary>
 
-Re-run `chrome-extension\native-host\setup-windows.bat` — this fixes the host path.
+Re-run `setup-windows.ps1` via PowerShell (`powershell -ExecutionPolicy Bypass -File chrome-extension\native-host\setup-windows.ps1`) — this fixes the host path.
 
 </details>
 
